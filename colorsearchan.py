@@ -21,7 +21,7 @@ class Root(tk.Tk):
 		super().__init__()
 		
 		
-		self.title("Image Color Sea chan")
+		self.title("Image Color Searchan")
 		self.minsize(500,400)
 		self.maxsize(500,400)
 		
@@ -38,8 +38,6 @@ class Root(tk.Tk):
 
 		self.button = tk.Button(self,text = "フォルダを選択する",command = self.pushed)
 		self.button2 = tk.Button(self,text = "実行",command = lambda:self.thread_obj.start(),state = "disabled")
-		#self.button2 = tk.Button(self,text = "実行",command = self.pushed2,state = "disabled")
-
 		self.button3 = tk.Button(self,text='抽出したい画像の色を選択', command=self.getColor)
 		self.button4= tk.Button(self,text='停止', command= self.finished, state = "disabled")
 		
@@ -77,7 +75,7 @@ class Root(tk.Tk):
 			self.button3.configure(state = "normal")
 			self.button4.configure(state = "disabled")
 
-	
+	#実行ボタン
 	def pushed2(self):
 		#フォルダが存在したら、
 		if self.folder_path is not None:
@@ -86,7 +84,7 @@ class Root(tk.Tk):
 			self.button3.configure(state = "disabled")
 			self.button4.configure(state = "normal")
 			self.isfinished = False
-			self.a(self.folder_path,self.selected_color)
+			self.search_images_by_color(self.folder_path,self.selected_color)
 			
 		else:
 			tk.messagebox.showinfo('フォルダ選択','画像が入っているフォルダを選択してください')
@@ -94,58 +92,51 @@ class Root(tk.Tk):
 	def bar_controll(self,amount):
 		self.pb.step(amount)
 		
-		
+	#フォルダを選択するボタン
 	def pushed(self):
 		#root.withdraw() #１個目のウィンドウが最小化される
 		folder = tk.filedialog.askdirectory()
 		self.folder_path = os.path.abspath(folder)
 		self.button2.configure(state = "normal")
-		progressbar_maximum = color.count_images(self.folder_path)
-		self.pb.configure(maximum=progressbar_maximum)
+		progressbar_maximum = len(self.get_image_files_list(self.folder_path)) #プログレスバーの最大値を取得
+		self.pb.configure(maximum=progressbar_maximum) #最大値を設定
 
-		
+	#抽出したい画像の色を選択ボタン	
 	def getColor(self):
 		self.selected_color = askcolor()
 		self.canvas.create_rectangle(0,0,290, 90,fill = self.selected_color[1],outline = self.selected_color[1])
+		
+	def get_image_files_list(self,folder_path):
+		image_files_list = glob.glob(folder_path + "/*.jpg") + glob.glob(folder_path + "/*.png")	
+		return image_files_list
+		
 	
 	#圧縮した画像を生成。
-	def a(self,folder_path,selected_color):
-
-		#if os.path.exists(folder_path + "/smalled"):
-		#	shutil.rmtree(folder_path + "/smalled")
-		#	print("smallフォルダをつくりなおすよ")
+	def search_images_by_color(self,folder_path,selected_color):
 			
-		image_number = color.count_images(folder_path)		
-		#copied_folder = shutil.copytree(folder_path, folder_path + "/smalled")	
-		
-		if not os.path.exists(folder_path + "/smalled_images"): os.mkdir(folder_path + "/smalled_images")
+		#small_images_folderの生成	
 		small_images_folder = folder_path + "/smalled_images"
 		
-		"フォルダ内のjpgとpngの配列"
-		image_files_list = glob.glob(folder_path + "/*.jpg") + glob.glob(folder_path + "/*.png")	
+		if not os.path.exists(small_images_folder): 
+			os.mkdir(small_images_folder)
+		else:
+			shutil.rmtree(small_images_folder)
 		
-		for image_file in image_files_list:
-			shutil.copy(image_file, str(small_images_folder))
+		#フォルダ内の画像(jpg,png)の配列
+		image_files_list = self.get_image_files_list(self.folder_path)
 		
-		#image_files = [item for item in os.listdir(folder_path) if item[-4:] == ".jpg" or item[-4:] == ".png"]
+		#フォルダ内の画像のみsmallimagesfolderにコピー
+		[shutil.copy(image_file, str(small_images_folder)) for image_file in image_files_list]
 		
-		#print(image_files)
-		"""
-		for item in os.listdir(folder_path):
-			if item[-4:] == ".jpg" or item[-4:] == ".png":
-				copied_folder = shutil.copy(folder_path +"/" +str(item), folder_path + "/smalled")	
-
-
-
+		#停止ボタンで停止できるようにwhile文の中で動かす
 		while True:
-		
-			for image_file in image_files:
-				smalled_img = color.get_original_small_img(img_path= folder_path +"/" + str(image_file))
-				smalled_img.save(copied_folder+ "/" + str(image_file))#smalledフォルダに低画質で複製,ファイル名同じ
 
-				color.get_main_color_list_img(img_path = copied_folder +"/" + str(image_file),
+			for image in os.listdir(small_images_folder):
+				smalled_img = color.get_original_small_img(img_path= str(small_images_folder) + "/" + str(image))
+				smalled_img.save(str(small_images_folder) + "/" + str(image))#smalledフォルダに低画質で上書き保存,ファイル名同じ
+				color.get_main_color_list_img(img_path = str(small_images_folder) + "/" + str(image),
 											selected_color = selected_color,
-											img_name = str(image_file),
+											img_name = str(image),
 											default_img_path=folder_path)					
 				self.bar_controll(1)
 				
@@ -153,8 +144,8 @@ class Root(tk.Tk):
 					break
 			
 			break
-		"""
-		
+		#small_image_folderの削除
+		shutil.rmtree(small_images_folder)
 		self.finished()	
 
 if __name__ == "__main__":

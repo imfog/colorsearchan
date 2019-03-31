@@ -29,10 +29,9 @@ class Color:
 			color_rgb = numpy.array(selected_color[0])
 
 			#絶対値を求める
-			zettai = abs(image_rgb -color_rgb)
+			absolute_value = abs(image_rgb -color_rgb)
 			
-			if all((40 >= zettai)):
-				#print(zettai)
+			if all((40 >= absolute_value)):
 				img = Image.open(fp = default_img_path +"/" + img_name)
 				img.show()
 				break
@@ -40,21 +39,7 @@ class Color:
 	def get_original_small_img(self,img_path):
 
 		img = Image.open(fp=img_path)
-		width = int(img.size[0] / 7)
-		height = int(img.size[1] / 7)
+		width = int(img.size[0] / 6)
+		height = int(img.size[1] / 6)
 		img = img.resize(size=(width, height))
 		return img
-		
-	def count_images(self,folder_path):
-		files = os.listdir(folder_path)
-		count = 0
-		for file in files:
-			index = re.search(".jpg", file)
-			if index:
-				count +=1
-				
-			index = re.search(".png", file)
-			if index:
-				count +=1
-
-		return count
