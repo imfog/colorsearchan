@@ -3,9 +3,9 @@
 block_cipher = None
 
 
-a = Analysis(['colorseachan.py'],
-             pathex=['/Users/hw17a114/Desktop'],
-             binaries=[('/Library/Frameworks/Python.framework/Versions/3.6/lib/libtk8.6.dylib', 'tk'),('/Library/Frameworks/Python.framework/Versions/3.6/lib/libtcl8.6.dylib', 'tcl')],
+a = Analysis(['colorsearchan.py'],
+             pathex=['/Users/hw17a114/colorsearchan'],
+             binaries=[('/System/Library/Frameworks/Tk.framework/Tk', 'tk'),('/System/Library/Frameworks/Tcl.framework/Tcl', 'tcl')],
              datas=[],
              hiddenimports=[],
              hookspath=['.'],
@@ -21,13 +21,17 @@ exe = EXE(pyz,
           a.binaries,
           a.zipfiles,
           a.datas,
-          name='colorseachan',
+          name='colorsearchan',
           debug=False,
           strip=False,
           upx=True,
           runtime_tmpdir=None,
           console=False )
 app = BUNDLE(exe,
-             name='colorseachan.app',
+             name='colorsearchan.app',
              icon=None,
-             bundle_identifier=None)
+             bundle_identifier=None
+             info_plist={
+                'NSHighResolutionCapable': 'True'
+                },
+             )

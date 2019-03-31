@@ -20,13 +20,10 @@ class Root(tk.Tk):
 	def __init__(self):
 		super().__init__()
 		
-		
 		self.title("Image Color Searchan")
 		self.minsize(500,400)
 		self.maxsize(500,400)
-		
-		#self.thread_obj = Process(target = self.pushed2,args=(q,))
-		
+				
 		self.thread_obj = threading.Thread(target = self.pushed2)
 
 		self.label = tk.Label(self, text="色で検索したい画像が入ってるフォルダを選択してください", padx=1, pady=50)
@@ -61,6 +58,10 @@ class Root(tk.Tk):
 		
 		self.mainloop()
 		
+	def get_image_files_list(self,folder_path):
+		image_files_list = glob.glob(folder_path + "/*.jpg") + glob.glob(folder_path + "/*.png")	
+		return image_files_list
+		
 	def finished(self):
 		
 		if not self.isfinished:
@@ -74,18 +75,20 @@ class Root(tk.Tk):
 			self.button.configure(state = "normal")
 			self.button3.configure(state = "normal")
 			self.button4.configure(state = "disabled")
-
+			#プログレスバーの値を0に
+			self.pb.configure(value = "0")
 	#実行ボタン
 	def pushed2(self):
 		#フォルダが存在したら、
 		if self.folder_path is not None:
+
 			self.button2.configure(text = "実行中",state = "disabled")
 			self.button.configure(state = "disabled")
 			self.button3.configure(state = "disabled")
 			self.button4.configure(state = "normal")
 			self.isfinished = False
 			self.search_images_by_color(self.folder_path,self.selected_color)
-			
+		
 		else:
 			tk.messagebox.showinfo('フォルダ選択','画像が入っているフォルダを選択してください')
 			
@@ -98,17 +101,15 @@ class Root(tk.Tk):
 		folder = tk.filedialog.askdirectory()
 		self.folder_path = os.path.abspath(folder)
 		self.button2.configure(state = "normal")
+		
 		progressbar_maximum = len(self.get_image_files_list(self.folder_path)) #プログレスバーの最大値を取得
 		self.pb.configure(maximum=progressbar_maximum) #最大値を設定
+
 
 	#抽出したい画像の色を選択ボタン	
 	def getColor(self):
 		self.selected_color = askcolor()
 		self.canvas.create_rectangle(0,0,290, 90,fill = self.selected_color[1],outline = self.selected_color[1])
-		
-	def get_image_files_list(self,folder_path):
-		image_files_list = glob.glob(folder_path + "/*.jpg") + glob.glob(folder_path + "/*.png")	
-		return image_files_list
 		
 	
 	#圧縮した画像を生成。
