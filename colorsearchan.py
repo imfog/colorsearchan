@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 import fcntl
-import glob #拡張しでフィルタ
+import glob #拡張子でフィルタ
 import tkinter as tk
 import tkinter.filedialog, tkinter.messagebox
 from tkinter import ttk
@@ -11,9 +11,10 @@ from multiprocessing import freeze_support, set_start_method, Process
 freeze_support()
 import imagecolor as cl
 import os
-#from multiprocessing import Queue
 import shutil
 #tk.tkを継承している
+
+default_folder_path = os.getcwd() #colorsearchanのパスを取得する。
 
 class Root(tk.Tk):	
 	#selfには継承したクラスもあてられている
@@ -37,6 +38,8 @@ class Root(tk.Tk):
 		self.button2 = tk.Button(self,text = "実行",command = lambda:self.thread_obj.start(),state = "disabled")
 		self.button3 = tk.Button(self,text='抽出したい画像の色を選択', command=self.getColor)
 		self.button4= tk.Button(self,text='停止', command= self.finished, state = "disabled")
+		self.button4= tk.Button(self,text='設定', command= self.open_setting_window)
+
 		
 		self.canvas = tk.Canvas(self,width =300,height = 100)
 		self.canvas.create_rectangle(0,0,290, 90,outline = "white")
@@ -62,6 +65,13 @@ class Root(tk.Tk):
 		image_files_list = glob.glob(folder_path + "/*.jpg") + glob.glob(folder_path + "/*.png")	
 		return image_files_list
 		
+	def open_setting_window(self):
+		setting_window = tk.Toplevel(master =self.master)
+		setting_window.minsize(300,600)
+		setting_window.maxsize(300,600)
+		setting_window.title("設定")
+		setting_window.grab_set() #ウィンドウの固定
+		
 	def finished(self):
 		
 		if not self.isfinished:
@@ -69,12 +79,11 @@ class Root(tk.Tk):
 			tk.messagebox.showinfo('終了','処理が終了しました')
 			self.thread_obj = None
 			self.thread_obj = threading.Thread(target = self.pushed2)
-			self.button2.configure(text = "実行",state = "normal",command = lambda:self.thread_obj.start())
-			#self.button2.configure(text = "実行",state = "normal",command = self.pushed2)
-
+			self.button2.configure(text = "実行",state = "normal",command = lambda:self.thread_obj.start()) #pushed2
 			self.button.configure(state = "normal")
 			self.button3.configure(state = "normal")
 			self.button4.configure(state = "disabled")
+			
 			#プログレスバーの値を0に
 			self.pb.configure(value = "0")
 	#実行ボタン
@@ -97,14 +106,15 @@ class Root(tk.Tk):
 		
 	#フォルダを選択するボタン
 	def pushed(self):
-		#root.withdraw() #１個目のウィンドウが最小化される
+		
 		folder = tk.filedialog.askdirectory()
 		self.folder_path = os.path.abspath(folder)
 		self.button2.configure(state = "normal")
 		
-		progressbar_maximum = len(self.get_image_files_list(self.folder_path)) #プログレスバーの最大値を取得
-		self.pb.configure(maximum=progressbar_maximum) #最大値を設定
-
+		#フォルダが選択されているのなら
+		if  self.folder_path != default_folder_path:	
+			progressbar_maximum = len(self.get_image_files_list(self.folder_path)) #プログレスバーの最大値を取得
+			self.pb.configure(maximum=progressbar_maximum) #最大値を設定
 
 	#抽出したい画像の色を選択ボタン	
 	def getColor(self):
@@ -143,7 +153,6 @@ class Root(tk.Tk):
 				
 				if self.isfinished:
 					break
-			
 			break
 		#small_image_folderの削除
 		shutil.rmtree(small_images_folder)

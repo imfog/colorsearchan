@@ -10,7 +10,7 @@ from sklearn.cluster import KMeans
 from PIL import Image
 import os,re
 import numpy
-#OpenCV、読み込んだままだとカラーチャンネルの順番がRGBになっていないようなので変換をしておきます。
+
 class Color:
 	def get_main_color_list_img(self,img_path,selected_color,img_name,default_img_path):
 		
